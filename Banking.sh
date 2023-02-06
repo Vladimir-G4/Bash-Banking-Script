@@ -15,7 +15,7 @@ function usrIntro(){
     if [[ $usrLoginOrSignup == [Ll] ]]; then
         usrLogin;
     elif [[ $usrLoginOrSignup = [Ss] ]]; then
-        usrSignup;
+        createAccount;
     else
         echo "Invalid input. Please try again.";
         sleep 1;
@@ -67,15 +67,6 @@ function usrLogin(){
     fi
 }
 
-#User Signup
-function usrSignup(){
-    echo ;
-    read -p "Enter Username: " usrName;
-    read -p "Enter Password: " usrPass;
-
-    createAccount $usrName $usrPass;
-}
-
 #Generates new card #'s
 function numberGenerator(){
     newNums= ;
@@ -107,10 +98,12 @@ function expiryGenerator(){
     echo ${newDate};
 }
 
-#Creates a new Acc and adds to DB
+#User Signup
 createAccount(){
-    usrName=$1;
-    usrPass=$2;
+    echo ;
+    read -p "Enter Username: " usrName;
+    read -p "Enter Password: " usrPass;
+
     cardNum=$(numberGenerator 15);
     cvcNum=$(numberGenerator 3); 
     expiryDate=$(expiryGenerator);
@@ -136,14 +129,76 @@ function usrMenu(){
     select usrChoice in "${options[@]}"
     do
         case $usrChoice in
-            "Check Balance") echo ; usrBal=$(sqlite3 notUsrInfo.db  "select usrBal from usrs where usrName='$1'") ; echo "Account Balance: \$$usrBal"; echo ;;
-            "Deposit") echo ; read -p "Enter deposit amount: $" depositAmount; echo ; read -t 1 -n 10000 discard ; usrBal=$(sqlite3 notUsrInfo.db  "select usrBal from usrs where usrName='$1'") ; updatedBal=$(expr $usrBal + $depositAmount) ; echo "Deposit Successful. Updating Balance." ; $(sqlite3 notUsrInfo.db  "update usrs set usrBal = $updatedBal where usrName='$1'") ; sleep 1 ; echo "Your account balance is now: \$$updatedBal"; echo ;;
-            "Withdraw") echo ; read -p "Enter withdrawal amount: $" withdrawAmount; echo ; read -t 1 -n 10000 discard ; usrBal=$(sqlite3 notUsrInfo.db  "select usrBal from usrs where usrName='$1'") ; updatedBal=$(expr $usrBal - $withdrawAmount) ; echo "Withdrawal Successful. Updating Balance." ; $(sqlite3 notUsrInfo.db  "update usrs set usrBal = $updatedBal where usrName='$1'") ; sleep 1 ; echo "Your account balance is now: \$$updatedBal"; echo ;;
-            "Request a new Debit Card") echo ; echo "Generating new card information..." ; echo ; sleep 3; newCardNum="'$(numberGenerator 15)'"; newCVCNum="'$(numberGenerator 3)'" ; newExpiryDate="'$(expiryGenerator)'" ; $(sqlite3 notUsrInfo.db  "update usrs set cardNum=$newCardNum, cvcNum=$newCVCNum, expiryDate=$newExpiryDate where usrName='$1'") ; echo "New Card information updated successfully.";;
-            "Change Password") echo; read -p "Enter new password: " newPass; read -t 1 -n 10000 discard; $(sqlite3 notUsrInfo.db  "update usrs set usrPass = '$newPass' where usrName='$1'") ; sleep 1; echo "Password successfully updated.";;
-            "View Account Information") echo ; echo "Username: $1"; usrPass=$(sqlite3 notUsrInfo.db  "select usrPass from usrs where usrName='$1'") ; cardNum=$(sqlite3 notUsrInfo.db  "select cardNum from usrs where usrName='$1'") ; cvcNum=$(sqlite3 notUsrInfo.db  "select cvcNum from usrs where usrName='$1'") ; expiryDate=$(sqlite3 notUsrInfo.db  "select expiryDate from usrs where usrName='$1'") ; echo "Password: $usrPass"; echo "Card Number: $cardNum"; echo "CVC Number: $cvcNum"; echo "Expiry Date: $expiryDate"; echo ;;
-            "Quit") exit;;
-            *) echo "Invalid option $REPLY" ; echo ;;
+            "Check Balance") 
+                echo ; 
+                usrBal=$(sqlite3 notUsrInfo.db  "select usrBal from usrs where usrName='$1'") ; 
+                echo "Account Balance: \$$usrBal" ; 
+                echo ;;
+            
+            "Deposit") 
+                echo ; 
+                read -p "Enter deposit amount: $" depositAmount ; 
+                echo ; 
+                read -t 1 -n 10000 discard ; 
+                usrBal=$(sqlite3 notUsrInfo.db  "select usrBal from usrs where usrName='$1'") ; 
+                updatedBal=$(expr $usrBal + $depositAmount) ; 
+                echo "Deposit Successful. Updating Balance." ; 
+                $(sqlite3 notUsrInfo.db  "update usrs set usrBal = $updatedBal where usrName='$1'") ; 
+                sleep 1 ; 
+                echo "Your account balance is now: \$$updatedBal"; 
+                echo ;;
+            
+            "Withdraw") 
+                echo ; 
+                read -p "Enter withdrawal amount: $" withdrawAmount; 
+                echo ; 
+                read -t 1 -n 10000 discard ; 
+                usrBal=$(sqlite3 notUsrInfo.db  "select usrBal from usrs where usrName='$1'") ; 
+                updatedBal=$(expr $usrBal - $withdrawAmount) ; 
+                echo "Withdrawal Successful. Updating Balance." ; 
+                $(sqlite3 notUsrInfo.db  "update usrs set usrBal = $updatedBal where usrName='$1'") ; 
+                sleep 1 ; 
+                echo "Your account balance is now: \$$updatedBal"; 
+                echo ;;
+            
+            "Request a new Debit Card") 
+                echo ; 
+                echo "Generating new card information..." ; 
+                echo ; 
+                sleep 3; 
+                newCardNum="'$(numberGenerator 15)'"; 
+                newCVCNum="'$(numberGenerator 3)'" ; 
+                newExpiryDate="'$(expiryGenerator)'" ; 
+                $(sqlite3 notUsrInfo.db  "update usrs set cardNum=$newCardNum, cvcNum=$newCVCNum, expiryDate=$newExpiryDate where usrName='$1'") ; 
+                echo "New Card information updated successfully.";;
+            
+            "Change Password") 
+                echo; 
+                read -p "Enter new password: " newPass; 
+                read -t 1 -n 10000 discard; 
+                $(sqlite3 notUsrInfo.db  "update usrs set usrPass = '$newPass' where usrName='$1'") ; 
+                sleep 1; 
+                echo "Password successfully updated.";;
+            
+            "View Account Information") 
+                echo ; 
+                echo "Username: $1"; 
+                usrPass=$(sqlite3 notUsrInfo.db  "select usrPass from usrs where usrName='$1'") ; 
+                cardNum=$(sqlite3 notUsrInfo.db  "select cardNum from usrs where usrName='$1'") ; 
+                cvcNum=$(sqlite3 notUsrInfo.db  "select cvcNum from usrs where usrName='$1'") ; 
+                expiryDate=$(sqlite3 notUsrInfo.db  "select expiryDate from usrs where usrName='$1'") ; 
+                echo "Password: $usrPass"; 
+                echo "Card Number: $cardNum"; 
+                echo "CVC Number: $cvcNum"; 
+                echo "Expiry Date: $expiryDate"; 
+                echo ;;
+            
+            "Quit") 
+                exit;;
+            
+            *) 
+                echo "Invalid option $REPLY" ; 
+                echo ;;
         esac
     done < /dev/tty;
 
