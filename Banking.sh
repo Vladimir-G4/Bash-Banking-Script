@@ -26,10 +26,11 @@ function usrIntro(){
 #Checks to see if username and password is in database
 checkDB(){
     name="'$1'";
+    pass=$(echo -n "$2" | shasum -a 256);
     usrNameCheck=$(sqlite3 notUsrInfo.db  "select usrName from usrs where usrName=$name");
     usrPassCheck=$(sqlite3 notUsrInfo.db  "select usrPass from usrs where usrName=$name");
     if [[ $usrNameCheck == $1 ]]; then
-        if [[ $usrPassCheck == $2 ]]; then
+        if [[ $usrPassCheck == $pass ]]; then
             echo "1";
         else
             echo "0";
@@ -104,6 +105,7 @@ createAccount(){
     read -p "Enter Username: " usrName;
     read -p "Enter Password: " usrPass;
 
+    usrPass=$(echo -n "$usrPass" | shasum -a 256);
     cardNum=$(numberGenerator 15);
     cvcNum=$(numberGenerator 3); 
     expiryDate=$(expiryGenerator);
@@ -175,6 +177,7 @@ function usrMenu(){
             "Change Password") 
                 echo; 
                 read -p "Enter new password: " newPass; 
+                newPass=$(echo -n "$newPass" | shasum -a 256);
                 read -t 1 -n 10000 discard; 
                 $(sqlite3 notUsrInfo.db  "update usrs set usrPass = '$newPass' where usrName='$1'") ; 
                 sleep 1; 
